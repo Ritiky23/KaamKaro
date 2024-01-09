@@ -3,6 +3,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_vector_icons/flutter_vector_icons.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:kaamkaro/screens/FindingScreen.dart';
+import 'package:kaamkaro/screens/MapScreen.dart';
 
 class WorkerHomeScreen extends StatefulWidget {
   const WorkerHomeScreen({Key? key}) : super(key: key);
@@ -27,6 +29,13 @@ class _WorkerHomeScreenState extends State<WorkerHomeScreen> {
   String city="__";
   double rating = 4.5; // Replace with actual rating
   int totalWorkCount = 50; // Replace with actual total work count
+
+  bool tickbtn=false;
+  String recName="";
+  String recCity="";
+  double reclat=0;
+  double reclong=0;
+  String distance="";
 
   @override
   void initState() {
@@ -81,7 +90,7 @@ class _WorkerHomeScreenState extends State<WorkerHomeScreen> {
         body: TabBarView(
           children: [
             buildProfileTab(),
-            const Center(child: Text('Work Fragment')),
+            buildWorkTab(), 
           ],
         ),
       ),
@@ -100,6 +109,129 @@ class _WorkerHomeScreenState extends State<WorkerHomeScreen> {
       });
     }
   }
+Widget buildWorkTab() {
+  return Container(
+    padding: const EdgeInsets.all(16),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: <Widget>[
+        Expanded(
+          child: FutureBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+            future: FirebaseFirestore.instance
+                .collection('workers')
+                .doc(_auth.currentUser?.uid)
+                .get(),
+            builder: (context, snapshot) {
+              if (!snapshot.hasData) {
+                return const CircularProgressIndicator();
+              }
+
+              var requestsData = snapshot.data!.data()!['requests'];
+
+              // Filter out keys where the value is false
+              List<dynamic> keysWithFalseValue = requestsData.entries
+                  .where((entry) => entry.value == false || entry.value==true)
+                  .map((entry) => entry.key)
+                  .toList();
+
+              print(keysWithFalseValue);
+
+              return ListView.builder(
+                itemCount: keysWithFalseValue.length,
+                itemBuilder: (context, index) {
+                  var recuid = keysWithFalseValue[index];
+
+                  return FutureBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+                    future: FirebaseFirestore.instance
+                        .collection('recruiters')
+                        .doc(recuid)
+                        .get(),
+                    builder: (context, recSnapshot) {
+                      if (!recSnapshot.hasData) {
+                        return const CircularProgressIndicator();
+                      }
+
+                      var recData = recSnapshot.data!.data() as Map<String, dynamic>;
+
+                      // Extract the required information
+                      recName = recData['name'];
+                      reclat = recData['lat'];
+                      reclong = recData['long'];
+                      recCity = recData['city'];
+
+                      // Create a widget with the extracted information
+        var requestWidget = ListTile(
+        leading: CircleAvatar(
+            child: Icon(AntDesign.user),
+            radius: 30,
+          ),
+        title: Text(recName,style: const TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+            )),
+        subtitle: Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Text(recCity, style: const TextStyle(
+        fontSize: 15,
+      )),
+      Text(GeoUtils.calculateHaversine(worlat, worlong, reclat, reclong).toStringAsFixed(2), style: const TextStyle(
+        fontSize: 15,
+          )),
+          ],
+         ),
+       trailing: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Visibility(visible: !tickbtn,
+              child:
+              IconButton(
+                icon: Icon(Icons.close, color: Colors.red),
+                onPressed: () {
+                  // Handle "Correct" button click
+                },
+              )),
+              const SizedBox(width: 8),
+              Visibility(
+  visible: !tickbtn,
+  child: IconButton(
+    icon: Icon(Icons.check, color: Colors.green),
+    onPressed: () {
+      setState(() {
+        tickbtn = true;
+      });
+      updateRequestStatus(recuid, true);
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => MapScreen(
+            startLat: worlat,
+            startLong: worlong,
+            endLat: reclat,
+            endLong: reclong,
+          ),
+        ),
+      );
+    },
+  ),
+),
+            ],
+          ),
+        ); 
+                      return requestWidget;
+                    },
+                  );
+                },
+              );
+            },
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
+
 
   Widget buildProfileTab() {
     return Container(
@@ -208,4 +340,17 @@ class _WorkerHomeScreenState extends State<WorkerHomeScreen> {
       ),
     );
   }
+  Future<void> updateRequestStatus(String recuid, bool status) async {
+  try {
+    await FirebaseFirestore.instance
+        .collection('workers')
+        .doc(_auth.currentUser?.uid)
+        .update({
+      'requests.$recuid': status,
+    });
+    print('Request status updated successfully');
+  } catch (e) {
+    print('Error updating request status: $e');
+  }
+}
 }

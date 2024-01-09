@@ -11,8 +11,9 @@ class WorkerModel{
   double? long=0;
   bool? available=false;
   List<String>? requests;
+  double? rating=0;
 
-  WorkerModel({this.uid,this.email,this.name,this.number,this.adhaar,this.role,this.profession,this.city,this.lat,this.long,this.available,this.requests});
+  WorkerModel({this.uid,this.email,this.name,this.number,this.adhaar,this.role,this.profession,this.city,this.lat,this.long,this.available,this.requests,this.rating});
 //Receiving datafrom server
   factory WorkerModel.fromMap(map){
     return WorkerModel(
@@ -27,9 +28,8 @@ class WorkerModel{
       lat: map['lat'],
       long:map['long'],
       available: map['available'],
-      requests: map['requests'] != null
-          ? List<String>.from(map['requests'])
-          : [], // Parse notifications list
+      requests: map['requests'] != null ? List<String>.from(map['requests']): [],
+      rating: map['rating']
     );
   }
 
@@ -47,7 +47,8 @@ Map<String, dynamic> toMap(){
     'lat':lat,
     'long':long,
     'available':available,
-    'requests':requests
+    'requests':requests,
+    'rating':rating
     
   };
 }

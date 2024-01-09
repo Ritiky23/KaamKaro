@@ -60,27 +60,26 @@ String prof = '';
 String wuid = '';
 bool sent = false;
 
-class WorkersList extends StatefulWidget {
+class RequestList extends StatefulWidget {
   final String customParameter;
 
-  const WorkersList({Key? key, required this.customParameter}) : super(key: key);
+  const RequestList({Key? key, required this.customParameter}) : super(key: key);
 
   @override
-  State<WorkersList> createState() => _WorkersListState();
+  State<RequestList> createState() => _RequestListState();
 }
 
-class _WorkersListState extends State<WorkersList> {
+class _RequestListState extends State<RequestList> {
   late Stream<List<UserList>> usersStream;
 
   @override
   void initState() {
     super.initState();
-    usersStream = fetchUsersWithConditionsStream();
+    usersStream = fetchRequestStream();
   }
 
-  Stream<List<UserList>> fetchUsersWithConditionsStream() {
+  Stream<List<UserList>> fetchRequestStream() {
     try {
-      bool isAvailableCondition = true;
       FirebaseAuth auth = FirebaseAuth.instance;
       recCity = '';
       reclat = 0.0;
@@ -105,40 +104,21 @@ class _WorkersListState extends State<WorkersList> {
         }
 
         String prof = widget.customParameter;
-        Query<Map<String, dynamic>> query = FirebaseFirestore.instance
-            .collection('workers')
-            .where('profession', isEqualTo: prof)
-            .where('available', isEqualTo: isAvailableCondition)
-            .where('city', isEqualTo: recCity);
+        QuerySnapshot<Map<String, dynamic>> querySnapshot = await FirebaseFirestore.instance
+       .collection('workers')
+       .doc(user!.uid)
+       .collection('requests')
+       .where('uid', isEqualTo: false)
+       .get();
+       for (QueryDocumentSnapshot<Map<String, dynamic>> docSnapshot in querySnapshot.docs) {
+            Map<String, dynamic> data = docSnapshot.data();}
 
         // Listen for changes to the query results
-        QuerySnapshot<Map<String, dynamic>> querySnapshot = await query.get();
 
         List<UserList> userList = [];
-        List<DocumentSnapshot<Map<String, dynamic>>> documents =
-            querySnapshot.docs;
-        for (DocumentSnapshot<Map<String, dynamic>> document in documents) {
-          Map<String, dynamic> userData = document.data()!;
-          String name = userData['name'] ?? '';
-          String phoneNumber = userData['number'] ?? '';
-          worcity = userData['city'] ?? '';
-          worlat = userData['lat'];
-          worlong = userData['long'];
-          wuid = userData['uid'];
-
-          userList.add(UserList(
-            name: name,
-            phoneNumber: phoneNumber,
-            city: worcity,
-            latitude: worlat,
-            longitude: worlong,
-            isBookingConfirmed: isAvailableCondition,
-            wuid: wuid,
-          ));
-        }
 
         return userList;
-      });
+    });
     } catch (e) {
       print('Error fetching users: $e');
       throw e;

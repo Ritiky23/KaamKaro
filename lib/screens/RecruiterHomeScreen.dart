@@ -58,54 +58,6 @@ class _RecruiterHomeScreenState extends State<RecruiterHomeScreen> {
       print('Error fetching data: $e');
     }
   }
-  Future<void> fetchUsersWithConditions() async {
-  try {
-    // Define the conditions
-    bool isAvailableCondition = true;  // Replace with your actual condition // Replace with your actual condition
-    FirebaseAuth auth=FirebaseAuth.instance;
-    String recCity = '';
-    String reclat = '';
-    String reclong = '';
-    User? user=auth.currentUser;
-    DocumentSnapshot<Map<String, dynamic>> snapshot =
-      await FirebaseFirestore.instance.collection('recruiters').doc(user!.uid).get();
-        if (snapshot.exists) {
-      // Document exists, process the data
-      Map<String, dynamic> userData = snapshot.data()!;
-      recCity = userData['city'] ?? '';
-      reclat = userData['lat'] ?? '';
-      reclong = userData['long'] ?? '';
-      print('User: $recCity, Phone: $reclat, Adhar: $reclong');
-    } else {
-      // Document does not exist
-      print('No data found for the specified UID');
-    }
-    // Execute the query
-    QuerySnapshot<Map<String, dynamic>> querySnapshot = await FirebaseFirestore.instance
-        .collection('workers')
-        .where('available', isEqualTo: true)
-        .where('city', isEqualTo: recCity)
-        .get();
-
-    // Process the results
-    List<DocumentSnapshot<Map<String, dynamic>>> documents = querySnapshot.docs;
-    for (DocumentSnapshot<Map<String, dynamic>> document in documents) {
-      // Access the user data
-      Map<String, dynamic> userData = document.data()!;
-      String name = userData['name'] ?? '';
-      String phoneNumber = userData['number'] ?? '';
-      String worcity = userData['city'] ?? '';
-      String worlat=userData['lat'] ?? '';
-      String worlong=userData['long'] ?? '';
-
-      // Perform actions with the user data as needed
-      print('User: $name, Phone: $phoneNumber, Adhar: $worcity');
-    }
-  } catch (e) {
-    print('Error fetching users: $e');
-  }
-}
-
 
   @override
   Widget build(BuildContext context) {
