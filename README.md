@@ -1,7 +1,7 @@
 # KaamKaro: Bridging Gaps, Building Lives
 
 <p align="center">
-  <img src="/screenshot/banner.png" alt="Screenshot 1"   width="600" height="500"/>
+  <img src="/screenshot/banner.png" alt="Screenshot 1"   width="600" height="400"/>
 </p>
 
 ## Problem Statement
