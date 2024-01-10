@@ -56,7 +56,7 @@ Introducing KaamKaro, a revolutionary platform designed to address the global is
 
 ### 6. Choose Location
 <p align="center">
-  <img src="/screenshot/findingworker2.png" alt="Screenshot 9" width="400" height="400"/>
+  <img src="/screenshot/findingworker2.png" alt="Screenshot 9" width="393" height="851"/>
 </p>
 - Users have the option to select a worker's current location or manually enter a location.
 
