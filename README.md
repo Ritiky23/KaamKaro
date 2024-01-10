@@ -61,8 +61,9 @@ Users can browse and select workers available nearby.
   <img src="/screenshot/findingworker2.png" alt="Screenshot 9" width="393" height="851"/>
 </p>
 Users have the option to select a worker's current location or manually enter a location.
-<p align="center">
+
 ### 7. Select Desired Worker
+<p align="center">
   <img src="/screenshot/findwork3.png" alt="Screenshot 6" width="393" height="851"/>
 </p>
 A list of available workers is presented, and users can choose the desired worker.
