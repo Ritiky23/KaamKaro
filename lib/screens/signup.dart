@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_vector_icons/flutter_vector_icons.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:kaamkaro/models/Recruiter.dart';
 import 'package:kaamkaro/models/Worker.dart';
 import 'package:kaamkaro/screens/RecruiterHomeScreen.dart';
@@ -46,11 +47,10 @@ class _SignUpPageState extends State<SignUpPage> {
     'Cleaner',  
   ];
   int? selectedValue=1;
-
    InputDecoration buildInputDecoration(IconData prefixIcon, String hintText) {
     return InputDecoration(
     prefixIcon: Icon(prefixIcon, color: Color(0xFF858485)),
-    contentPadding: EdgeInsets.fromLTRB(20, 15, 20, 15),
+    contentPadding: EdgeInsets.fromLTRB(-30, 15, 20,-30),
     hintText: hintText,
     hintStyle: TextStyle(color: Color(0xFF858485)),
     filled: true,
@@ -112,7 +112,7 @@ class _SignUpPageState extends State<SignUpPage> {
       controller: AadharController,
       validator: (newValue){
         if(newValue!.isEmpty){
-          return("Aadhar Number is required");
+          return("Aadhaar Number is required");
         }
       },
       autofocus: false,
@@ -121,7 +121,7 @@ class _SignUpPageState extends State<SignUpPage> {
         AadharController.text=newValue!;
       },
       textInputAction: TextInputAction.next,
-      decoration: buildInputDecoration(FontAwesome.user_secret, "Adhaar Number"),);
+      decoration: buildInputDecoration(Icons.credit_card, "Aadhaar Number"),);
 
     final emailField=TextFormField(
       controller: emailController,
@@ -159,7 +159,7 @@ class _SignUpPageState extends State<SignUpPage> {
       textInputAction: TextInputAction.next,
             decoration: InputDecoration(
     prefixIcon: Icon(Icons.password_outlined, color: Color(0xFF858485)),
-    contentPadding: EdgeInsets.fromLTRB(20, 15, 20, 15),
+    contentPadding:EdgeInsets.fromLTRB(0, 15, 20, 0),
     hintText: "Password",
     hintStyle: TextStyle(color: Color(0xFF858485)),
     filled: true,
@@ -199,9 +199,9 @@ class _SignUpPageState extends State<SignUpPage> {
         confirmpasswordController.text=newValue!;
       },
       textInputAction: TextInputAction.next,
-            decoration: InputDecoration(
+      decoration: InputDecoration(
     prefixIcon: Icon(Icons.password_outlined, color: Color(0xFF858485)),
-    contentPadding: EdgeInsets.fromLTRB(20, 15, 20, 15),
+    contentPadding: EdgeInsets.fromLTRB(0, 15, 20, 0),
     hintText: "Password",
     hintStyle: TextStyle(color: Color(0xFF858485)),
     filled: true,
@@ -246,13 +246,20 @@ class _SignUpPageState extends State<SignUpPage> {
             child: Form(key: _formKey,
             child: Column(children: <Widget>[
               SizedBox(
-                height: 150,
+                height: 130,
                 width: 300,
                 child: Image.asset("images/kaamkaro23.png",
-                fit: BoxFit.contain,
                 ),
-                
               ),
+             Text(
+            'KaamKaro',
+            style: GoogleFonts.bebasNeue(
+              textStyle: TextStyle(
+                fontSize: 40.0, // Adjust the size as needed
+                color: Colors.white,
+                letterSpacing: 5.0,
+                
+              ),),),
               Row(children: <Widget>[
                 SizedBox(width: 80,),
                 Radio<int>(
@@ -307,21 +314,41 @@ class _SignUpPageState extends State<SignUpPage> {
             ),
             SizedBox(height: 10,),
             if (dropdownworker)
-              DropdownButton(
-                value: proff,
-                icon: const Icon(Icons.keyboard_arrow_down),
-                items: items.map((String item) {
-                  return DropdownMenuItem(
-                    value: item,
-                    child: Text(item),
-                  );
-                }).toList(),
-                onChanged: (String? newValue) {
-                  setState(() {
-                    proff = newValue!;
-                    print(newValue!);
-                  });
-                },
+              Container(
+                padding: EdgeInsets.only(left: 10),
+  decoration: BoxDecoration(
+    color: Color(0xFF4b5ebc),
+    borderRadius: BorderRadius.circular(50),
+  ),
+                child: DropdownButton(
+                  value: proff,
+                    dropdownColor: Color(0xFFcbc0ff),
+                  items: items.map((String item) {
+                    return DropdownMenuItem(
+                      value: item,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 0),
+                        child: Text(item,style: TextStyle(color: Color.fromARGB(255, 255, 255, 255)),),
+                      ),
+                    );
+                  }).toList(),
+                  onChanged: (String? newValue) {
+                    setState(() {
+                      proff = newValue!;
+                      print(newValue!);
+                    });
+                  },
+                    icon: Padding(
+                      padding: const EdgeInsets.only(right:10.0),
+                      child: Icon(
+                      Icons.keyboard_arrow_down,
+                      color: Colors.white,
+                                        ),
+                    ),
+                   underline: SizedBox(),
+                   
+                
+                ),
               ),  
 
             signupButton,
@@ -375,7 +402,6 @@ void signUp(String email, String password) async {
   if (_formKey.currentState!.validate()) {
     try {
       UserCredential userCredential = await _auth.createUserWithEmailAndPassword(email: email, password: password);
-      print("yuppp");
       postDetailsToFirestore(userCredential.user!);
       if(role=='worker'){
         Navigator.push(context, MaterialPageRoute(builder: (context)=>WorkerHomeScreen(),),);

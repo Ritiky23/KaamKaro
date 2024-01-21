@@ -1,35 +1,29 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter_vector_icons/flutter_vector_icons.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'dart:math';
 import 'package:kaamkaro/screens/ChoosenUserScreen.dart';
 
 class GeoUtils {
   static const double earthRadius = 6371.0; // Earth radius in kilometers
 
-  static double degreesToRadians(double degrees) {
-    return degrees * (pi / 180.0);
-  }
+  static double calculateHaversine(double lat1,double lon1,double lat2,double lon2){
+    print('worlat-${lat1}');
+    print('worlong-${lon1}');
+    print('reclat-${lat2}');
+    print('reclong-${lon2}');
+  var p = 0.017453292519943295;
+  var a = 0.5 - cos((lat2 - lat1) * p)/2 + 
+        cos(lat1 * p) * cos(lat2 * p) * 
+        (1 - cos((lon2 - lon1) * p))/2;
+  double distance= 12742*asin(sqrt(a));
+  print(distance);
+  return distance;
 
-  static double calculateHaversine(
-      double lat1, double lon1, double lat2, double lon2) {
-    final double dLat = degreesToRadians(lat2 - lat1);
-    final double dLon = degreesToRadians(lon2 - lon1);
-
-    final double a = sin(dLat / 2) * sin(dLat / 2) +
-        cos(degreesToRadians(lat1)) *
-            cos(degreesToRadians(lat2)) *
-            sin(dLon / 2) *
-            sin(dLon / 2);
-
-    final double c = 2 * atan2(sqrt(a), sqrt(1 - a));
-
-    final double distance = earthRadius * c; // Distance in kilometers
-
-    return distance;
-  }
 }
-
+}
 class UserList {
   final String name;
   final String phoneNumber;
@@ -136,7 +130,6 @@ class _WorkersListState extends State<WorkersList> {
             wuid: wuid,
           ));
         }
-
         return userList;
       });
     } catch (e) {
@@ -144,12 +137,20 @@ class _WorkersListState extends State<WorkersList> {
       throw e;
     }
   }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Workers List'),
+        backgroundColor: Color(0xFFcbc0ff),
+        title: Text(
+            'Workers List',
+            style: GoogleFonts.bebasNeue(
+              textStyle: TextStyle(
+                fontSize: 20.0, // Adjust the size as needed
+                color: Colors.white,
+                letterSpacing: 2.0,
+                
+              ),),),
       ),
       body: StreamBuilder<List<UserList>>(
         stream: usersStream,
@@ -164,45 +165,60 @@ class _WorkersListState extends State<WorkersList> {
               itemCount: userList.length,
               itemBuilder: (context, index) {
                 UserList user = userList[index];
-                return Card(
-                  elevation: 5,
-                  margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  child: ListTile(
-                    contentPadding: EdgeInsets.all(16),
-                    title: Text(
-                      user.name,
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    subtitle: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Column(
-                          children: [
-                            SizedBox(height: 4),
-                            Text('City: ${user.city}'),
-                            SizedBox(height: 4),
-                            Text(
-                              'Distance: ${GeoUtils.calculateHaversine(worlat, worlong, user.latitude, user.longitude).toStringAsFixed(2)} km',
-                            ),
-                          ],
-                        ),
+return Card(
+  elevation: 1,
+  margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+  child: ListTile(
+    contentPadding: EdgeInsets.all(16),
+    leading: CircleAvatar(
+      radius: 30,
+      backgroundImage: AssetImage("images/work1.jpg"), // Replace with the actual path to your image
+    ),
+    title: Text(
+      user.name,
+      style: TextStyle(
+        fontSize: 18,
+        fontWeight: FontWeight.bold,
+      ),
+    ),
+    subtitle: Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Column(
+          children: [
+            SizedBox(height: 4),
+            Row(
+              children: [
+                Icon(Icons.location_on,size: 20,),
+                Text(' ${user.city}'),
+              ],
+            ),
+            SizedBox(height: 4),
+            Padding(
+              padding: const EdgeInsets.only(right:53.0),
+              child: Row(
+                children: [
+                  Icon(Icons.social_distance,size: 20,),
+                  Text('  ${GeoUtils.calculateHaversine(worlat, worlong, reclat, reclong).toStringAsFixed(2)}km',),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ],
+    ),
+    onTap: () {
+      // Navigate to the user's profile screen when tapped
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => UserProfileScreen(wuid: user.wuid),
+        ),
+      );
+    },
+  ),
+);
 
-                      ],
-                    ),
-                                    onTap: () {
-                  // Navigate to the user's profile screen when tapped
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => UserProfileScreen(wuid: user.wuid),
-                    ),
-                  );
-                },
-                  ),
-                );
               },
             );
           }

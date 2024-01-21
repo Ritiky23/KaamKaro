@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:kaamkaro/screens/RecruiterHomeScreen.dart';
 import 'package:kaamkaro/screens/WorkerHomeScreen.dart';
 import 'package:kaamkaro/screens/signup.dart';
@@ -173,13 +174,23 @@ class _LoginScreenState extends State<LoginScreen> {
                 child: Column(
                   children: <Widget>[
                     SizedBox(
-                      height: 250,
-                      width: 300,
+                      height: 150,
+                      width: 150,
                       child: Image.asset(
                         "images/kaamkaro23.png",
                         fit: BoxFit.contain,
                       ),
                     ),
+        Text(
+            'KaamKaro',
+            style: GoogleFonts.bebasNeue(
+              textStyle: TextStyle(
+                fontSize: 50.0, // Adjust the size as needed
+                color: Colors.white,
+                letterSpacing: 5.0,
+                
+              ),),),
+              SizedBox(height: 10,),
                     Padding(
                       padding: const EdgeInsets.only(left: 40.0, right: 40.0),
                       child: emailField,

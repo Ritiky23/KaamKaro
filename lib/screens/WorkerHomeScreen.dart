@@ -5,6 +5,7 @@ import 'package:flutter_vector_icons/flutter_vector_icons.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:kaamkaro/screens/FindingScreen.dart';
 import 'package:kaamkaro/screens/MapScreen.dart';
+import 'package:kaamkaro/screens/WorkerRecProfile.dart';
 
 class WorkerHomeScreen extends StatefulWidget {
   const WorkerHomeScreen({Key? key}) : super(key: key);
@@ -16,26 +17,28 @@ class WorkerHomeScreen extends StatefulWidget {
 class _WorkerHomeScreenState extends State<WorkerHomeScreen> {
   final _auth = FirebaseAuth.instance;
   final _firestore = FirebaseFirestore.instance;
-  CircleAvatar dp = CircleAvatar(
-    child: Icon(AntDesign.user),
-    radius: 50,
-  );
+CircleAvatar dp = CircleAvatar(
+  backgroundImage: AssetImage("images/work1.jpg"),
+  radius: 50,
+);
 
   String name = "__";
   String phoneNumber = "__";
   String aadharNumber = "__";
   String email = "__";
   bool isAvailable = false;
-  String city="__";
-  double rating = 4.5; // Replace with actual rating
-  int totalWorkCount = 50; // Replace with actual total work count
+  String city = "__";
+  double rating = 4.5; // Replace with the actual rating
+  int totalWorkCount = 50; // Replace with the actual total work count
 
-  bool tickbtn=false;
-  String recName="";
-  String recCity="";
-  double reclat=0;
-  double reclong=0;
-  String distance="";
+  bool tickbtn = false;
+  String recName = "";
+  String recCity = "";
+  double reclat = 0;
+  double reclong = 0;
+  String distance = "";
+  String recNumber="";
+  String recEmail="";
 
   @override
   void initState() {
@@ -56,7 +59,7 @@ class _WorkerHomeScreenState extends State<WorkerHomeScreen> {
           phoneNumber = data['number'] ?? "__";
           aadharNumber = data['adhaar'] ?? "__";
           email = data['email'] ?? "__";
-          city=data['city'] ?? "__";
+          city = data['city'] ?? "__";
         });
       }
     } catch (e) {
@@ -70,12 +73,34 @@ class _WorkerHomeScreenState extends State<WorkerHomeScreen> {
       length: 2,
       child: Scaffold(
         appBar: AppBar(
+            actions: [
+            PopupMenuButton<String>(
+              onSelected: (value) {
+                if (value == 'logout') {
+                  _signOut();
+                }
+              },
+              itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+                const PopupMenuItem<String>(
+                  value: 'logout',
+                  child: ListTile(
+                    leading: Icon(Icons.exit_to_app),
+                    title: Text('Logout'),
+                  ),
+                ),
+              ],
+            ),
+          ],
           backgroundColor: const Color(0xFFcac1ff),
-          title: Image.asset(
-            "images/kaamtitle.png",
-            width: 180,
-            height: 200,
-          ),
+          title:         Text(
+            'KaamKaro',
+            style: GoogleFonts.bebasNeue(
+              textStyle: TextStyle(
+                fontSize: 30.0, // Adjust the size as needed
+                color: Colors.white,
+                letterSpacing: 5.0,
+                
+              ),),),
           bottom: const TabBar(
             tabs: [
               Tab(
@@ -87,10 +112,11 @@ class _WorkerHomeScreenState extends State<WorkerHomeScreen> {
             ],
           ),
         ),
+        
         body: TabBarView(
           children: [
             buildProfileTab(),
-            buildWorkTab(), 
+            buildWorkTab(),
           ],
         ),
       ),
@@ -109,128 +135,166 @@ class _WorkerHomeScreenState extends State<WorkerHomeScreen> {
       });
     }
   }
-Widget buildWorkTab() {
-  return Container(
-    padding: const EdgeInsets.all(16),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: <Widget>[
-        Expanded(
-          child: FutureBuilder<DocumentSnapshot<Map<String, dynamic>>>(
-            future: FirebaseFirestore.instance
-                .collection('workers')
-                .doc(_auth.currentUser?.uid)
-                .get(),
-            builder: (context, snapshot) {
-              if (!snapshot.hasData) {
-                return const CircularProgressIndicator();
-              }
 
-              var requestsData = snapshot.data!.data()!['requests'];
-
-              // Filter out keys where the value is false
-              List<dynamic> keysWithFalseValue = requestsData.entries
-                  .where((entry) => entry.value == false || entry.value==true)
-                  .map((entry) => entry.key)
-                  .toList();
-
-              print(keysWithFalseValue);
-
-              return ListView.builder(
-                itemCount: keysWithFalseValue.length,
-                itemBuilder: (context, index) {
-                  var recuid = keysWithFalseValue[index];
-
-                  return FutureBuilder<DocumentSnapshot<Map<String, dynamic>>>(
-                    future: FirebaseFirestore.instance
-                        .collection('recruiters')
-                        .doc(recuid)
-                        .get(),
-                    builder: (context, recSnapshot) {
-                      if (!recSnapshot.hasData) {
-                        return const CircularProgressIndicator();
-                      }
-
-                      var recData = recSnapshot.data!.data() as Map<String, dynamic>;
-
-                      // Extract the required information
-                      recName = recData['name'];
-                      reclat = recData['lat'];
-                      reclong = recData['long'];
-                      recCity = recData['city'];
-
-                      // Create a widget with the extracted information
-        var requestWidget = ListTile(
-        leading: CircleAvatar(
-            child: Icon(AntDesign.user),
-            radius: 30,
+  Widget buildWorkTab() {
+  return FutureBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+    future: FirebaseFirestore.instance
+        .collection('workers')
+        .doc(_auth.currentUser?.uid)
+        .get(),
+    builder: (context, snapshot) {
+      print(snapshot);
+      if (!snapshot.hasData) {
+        return Scaffold(
+          body: Center(
+            child: CircularProgressIndicator(),
           ),
-        title: Text(recName,style: const TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-            )),
-        subtitle: Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      Text(recCity, style: const TextStyle(
-        fontSize: 15,
-      )),
-      Text(GeoUtils.calculateHaversine(worlat, worlong, reclat, reclong).toStringAsFixed(2), style: const TextStyle(
-        fontSize: 15,
-          )),
-          ],
-         ),
-       trailing: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Visibility(visible: !tickbtn,
-              child:
-              IconButton(
-                icon: Icon(Icons.close, color: Colors.red),
-                onPressed: () {
-                  // Handle "Correct" button click
-                },
-              )),
-              const SizedBox(width: 8),
-              Visibility(
-  visible: !tickbtn,
-  child: IconButton(
-    icon: Icon(Icons.check, color: Colors.green),
-    onPressed: () {
-      setState(() {
-        tickbtn = true;
-      });
-      updateRequestStatus(recuid, true);
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => MapScreen(
-            startLat: worlat,
-            startLong: worlong,
-            endLat: reclat,
-            endLong: reclong,
+        );
+      }
+
+      var workerData = snapshot.data!.data();
+      print(workerData);
+
+      if (workerData == null || !workerData.containsKey('requests')) {
+        return Scaffold(
+          body: Center(
+            child: Text('No requests available'),
           ),
+        );
+      }
+
+      var requestsData = workerData['requests'];
+      if (requestsData == null || requestsData.isEmpty) {
+        return Scaffold(
+          body: Center(
+            child: Text('No requests available'),
+          ),
+        );
+      }
+
+      List<dynamic> keysWithFalseValue = requestsData.entries
+          .where((entry) => entry.value == false)
+          .map((entry) => entry.key)
+          .toList();
+
+      return Scaffold(
+        body: ListView.builder(
+          itemCount: keysWithFalseValue.length,
+          itemBuilder: (context, index) {
+            var recuid = keysWithFalseValue[index] as String;
+            return FutureBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+              future: FirebaseFirestore.instance
+                  .collection('recruiters')
+                  .doc(recuid)
+                  .get(),
+              builder: (context, recSnapshot) {
+                if (!recSnapshot.hasData) {
+                        return Scaffold(
+                        body: Center(
+                  child: CircularProgressIndicator(
+                    color: Color.fromARGB(255, 19, 19, 247),
+                  ),
+                      ),
+                  );
+                }
+
+                var recData = recSnapshot.data!.data();
+                if (recData == null) {
+                  return Text('No data available for the recruiter');
+                }
+
+                // Extract the required information
+                recName = recData['name'];
+                reclat = recData['lat'];
+                reclong = recData['long'];
+                recCity = recData['city'];
+                recNumber=recData['number'];
+                recEmail=recData['email'];
+                //  recNumber = recData['number'];
+
+                // Create a widget with the extracted information
+                var requestWidget = ListTile(
+                  leading: CircleAvatar(
+                    backgroundImage: AssetImage("images/dp_mine.jpg"),
+                    radius: 30,
+                  ),
+                  title: Text(
+                    recName,
+                    style: const TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  subtitle: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        recCity,
+                        style: const TextStyle(
+                          fontSize: 15,
+                        ),
+                      ),
+                      Text(
+                        '${GeoUtils.calculateHaversine(worlat, worlong, reclat, reclong)
+                            .toStringAsFixed(2)}km',
+                        style: const TextStyle(
+                          fontSize: 15,
+                        ),
+                      ),
+                    ],
+                  ),
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Visibility(
+                        visible: !tickbtn,
+                        child: IconButton(
+                          icon: Icon(Icons.close, color: Colors.red),
+                          onPressed: () {
+                            // Handle "Close" button click
+                          },
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Visibility(
+                        visible: !tickbtn,
+                        child: IconButton(
+                          icon: Icon(Icons.check, color: Colors.green),
+                          onPressed: () {
+                            setState(() {
+                              tickbtn = true;
+                            });
+                              Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => WorkerRecProfileWithoutAadhaar(
+                                        name: recName,
+                                        city: recCity,
+                                        phoneNumber: recNumber,
+                                        email: recEmail,
+                                ),
+                              ),
+                            );
+                            updateRequestStatus(recuid, true);
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+                return requestWidget;
+              },
+            );
+          },
         ),
       );
     },
-  ),
-),
-            ],
-          ),
-        ); 
-                      return requestWidget;
-                    },
-                  );
-                },
-              );
-            },
-          ),
-        ),
-      ],
-    ),
   );
 }
-
+ Future<void> _signOut() async {
+    await FirebaseAuth.instance.signOut();
+    Navigator.of(context).pop(); // Close the screen
+  }
 
 
   Widget buildProfileTab() {
@@ -293,15 +357,17 @@ Widget buildWorkTab() {
                     ),
                   ),
                   Row(
-                    children: [Icon(Icons.star),
-                    SizedBox(width: 10,),
-                    Text(
-                    rating.toString(),
-                    style: const TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),],
+                    children: [
+                      Icon(Icons.star),
+                      SizedBox(width: 10,),
+                      Text(
+                        rating.toString(),
+                        style: const TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
                   )
                 ],
               ),
@@ -340,17 +406,21 @@ Widget buildWorkTab() {
       ),
     );
   }
+
+
+
+
   Future<void> updateRequestStatus(String recuid, bool status) async {
-  try {
-    await FirebaseFirestore.instance
-        .collection('workers')
-        .doc(_auth.currentUser?.uid)
-        .update({
-      'requests.$recuid': status,
-    });
-    print('Request status updated successfully');
-  } catch (e) {
-    print('Error updating request status: $e');
+    try {
+      await FirebaseFirestore.instance
+          .collection('workers')
+          .doc(_auth.currentUser?.uid)
+          .update({
+        'requests.$recuid': status,
+      });
+      print('Request status updated successfully');
+    } catch (e) {
+      print('Error updating request status: $e');
+    }
   }
-}
 }

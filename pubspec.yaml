@@ -50,17 +50,30 @@ dependencies:
   google_maps_flutter: ^2.5.2
   flutter_polyline_points: ^2.0.0
   flutter_svg: ^2.0.9
-
+  url_launcher: ^6.0.6
+  google_places_autocomplete_text_field: ^0.1.2
+  flutter_rating_stars: ^1.0.3+4
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  flutter_lints: ^2.0.0
+  flutter_native_splash: ^2.3.9
+
+flutter_native_splash:
+  color: "#cac0fe"
+  image: images/logo1.png
+  android: true
+  fullscreen: true
+  android_12:
+    image: images/logo1.png
+    icon_background_color: "#cac0fe"
 
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is
   # activated in the `analysis_options.yaml` file located at the root of your
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
-  flutter_lints: ^2.0.0
+
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -76,6 +89,8 @@ flutter:
     - images/carpenter.png
     - images/kaamkaro23.png
     - images/kaamtitle.png
+    - images/work1.jpg
+    - images/dp_mine.jpg
 
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
