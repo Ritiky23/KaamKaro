@@ -1,6 +1,8 @@
 # KaamKaro: Bridging Gaps, Building Lives
 
-![KaamKaro Logo](/images/Kaamkaro23.png)
+<p align="center">
+  <img src="/screenshot/banner.png" alt="Screenshot"   width="600" height="400"/>
+</p>
 
 ## Problem Statement
 
@@ -24,15 +26,69 @@ Introducing KaamKaro, a revolutionary platform designed to address the global is
 
 ## Screenshots
 
-1. ![Screenshot 1](link/to/screenshot1.png)
-2. ![Screenshot 2](link/to/screenshot2.png)
-3. ![Screenshot 3](link/to/screenshot3.png)
-4. ![Screenshot 4](link/to/screenshot4.png)
-5. ![Screenshot 5](link/to/screenshot5.png)
-6. ![Screenshot 6](link/to/screenshot6.png)
+### 1. Login Screen
+<p align="center">
+  <img src="/screenshot/login.png" alt="Screenshot 1"   width="393" height="851"/>
+</p>
+The login screen allows users to sign in to their accounts.
 
-## How to Contribute
+### 2. Signup Screen
+<p align="center">
+  <img src="/screenshot/signup.png" alt="Screenshot 2" width="393" height="851"/>
+</p>
+Users can create a new account by providing necessary details.
 
-If you believe in our mission to combat poverty and contribute to economic growth, you can contribute to the KaamKaro project. Feel free to fork the repository, make improvements, and submit pull requests. Together, we can make a difference in the lives of countless individuals by providing them with access to work opportunities and breaking the chains of poverty.
+### 3. Recruiter Profile Screen
+<p align="center">
+  <img src="/screenshot/rechomescreen.png" alt="Screenshot 3" width="393" height="851"/>
+</p>
+Recruiter profile screen displays information about the recruiter, such as name, contact details, and role.
 
-Join the KaamKaro community and be a part of the change!
+### 4. Worker Profile Screen
+<p align="center">
+  <img src="/screenshot/workerprofile.png" alt="Screenshot 4" width="393" height="851"/>
+</p>
+Worker profile screen showcases details about the worker, including their profession, name, and contact information.
+
+### 5. Choose Nearby Worker
+<p align="center">
+  <img src="/screenshot/findingwork1.png" alt="Screenshot 5" width="393" height="851"/>
+</p>
+Users can browse and select workers available nearby.
+
+### 6. Choose Location
+<p align="center">
+  <img src="/screenshot/findingworker2.png" alt="Screenshot 9" width="393" height="851"/>
+</p>
+Users have the option to select a worker's current location or manually enter a location.
+
+### 7. Select Desired Worker
+<p align="center">
+  <img src="/screenshot/findwork3.png" alt="Screenshot 6" width="393" height="851"/>
+</p>
+A list of available workers is presented, and users can choose the desired worker.
+
+### 8. Request Worker
+<p align="center">
+  <img src="/screenshot/findworklabprofile.png" alt="Screenshot 7" width="393" height="851"/>
+</p>
+Users can send a work request to the selected worker and call them once the request is accepted.
+
+### 9. Worker Notification
+<p align="center">
+  <img src="/screenshot/requestlistwork.png" alt="Screenshot 8" width="393" height="851"/>
+</p> 
+Workers receive notifications about incoming work requests. If accepted, location and contact details are exchanged.
+
+### 10. Rate Worker
+<p align="center">
+  <img src="/screenshot/ratework.png" alt="Screenshot 8" width="393" height="851"/>
+</p>
+After the job is completed, users can rate the worker's performance on a scale of 1 to 5 stars.
+
+
+
+## Future Scope
+1. Implement sophisticated matching algorithms using artificial intelligence (AI) to enhance the job seeker and job provider matching process.
+2. Introduce a skill endorsement and rating system where workers can receive endorsements for specific skills. AI algorithms can analyze job completion data and user feedback to automatically endorse workers for their skills
+
