@@ -32,6 +32,7 @@ class UserList {
   final double longitude;
   bool isBookingConfirmed = false;
   final String wuid;
+  final String wprof;
 
   UserList({
     required this.name,
@@ -41,6 +42,7 @@ class UserList {
     required this.longitude,
     required this.isBookingConfirmed,
     required this.wuid,
+    required this.wprof,
   });
 }
 
@@ -52,6 +54,7 @@ double worlat = 0.0;
 double worlong = 0.0;
 String prof = '';
 String wuid = '';
+String wprof='';
 bool sent = false;
 
 class WorkersList extends StatefulWidget {
@@ -116,9 +119,11 @@ class _WorkersListState extends State<WorkersList> {
           String name = userData['name'] ?? '';
           String phoneNumber = userData['number'] ?? '';
           worcity = userData['city'] ?? '';
-          worlat = userData['lat'];
-          worlong = userData['long'];
-          wuid = userData['uid'];
+          worlat = userData['lat']??"";
+          worlong = userData['long']?? "";
+          wuid = userData['uid']?? "";
+          wprof=userData['profileImage']?? "";
+
 
           userList.add(UserList(
             name: name,
@@ -128,6 +133,7 @@ class _WorkersListState extends State<WorkersList> {
             longitude: worlong,
             isBookingConfirmed: isAvailableCondition,
             wuid: wuid,
+            wprof:wprof,
           ));
         }
         return userList;
@@ -170,10 +176,13 @@ return Card(
   margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
   child: ListTile(
     contentPadding: EdgeInsets.all(16),
-    leading: CircleAvatar(
-      radius: 30,
-      backgroundImage: AssetImage("images/work1.jpg"), // Replace with the actual path to your image
-    ),
+leading: CircleAvatar(
+  radius: 30,
+  backgroundImage: NetworkImage(user.wprof ?? "images/work1.jpg") as ImageProvider<Object>?,
+),
+
+
+
     title: Text(
       user.name,
       style: TextStyle(

@@ -31,6 +31,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
   String profession = "";
   bool sent = false;
   bool accepted = false;
+  String profileImg='';
   int _stars = 0;
 
   @override
@@ -141,6 +142,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
           rating = data['rating'] ?? 0.0;
           totalWork = data['totalWork'] ?? 0;
           profession = data['profession'] ?? "__";
+          profileImg=data['profileImage']??"";
         });
       }
 
@@ -192,7 +194,11 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
             child: Stack(
               alignment: Alignment.bottomRight,
               children: [
-                dp,
+                CircleAvatar(
+                  radius: 50,
+                  backgroundImage: NetworkImage(profileImg),
+                )
+                ,
               ],
             ),
           ),

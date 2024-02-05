@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -7,6 +9,7 @@ import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:kaamkaro/screens/FindingScreen.dart';
+import 'package:kaamkaro/utils/ProfileImageRec.dart';
 
 
 class RecruiterHomeScreen extends StatefulWidget {
@@ -31,11 +34,22 @@ class _RecruiterHomeScreenState extends State<RecruiterHomeScreen> {
   String email = "__";
   String city="__";
   String ruid="";
+  String profile="";
+  ProfilePictureRec _profilePictureRec = ProfilePictureRec();
+    final _profileImageStreamController = StreamController<String?>.broadcast();
+  Stream<String?> get profileImageStream => _profileImageStreamController.stream;
 
   @override
   void initState() {
     super.initState();
     fetchProfileData();
+      _profilePictureRec.imageStream.listen((imageUrl) {
+      // Notify the UI about the updated image URL
+      setState(() {
+        profile = imageUrl ?? ""; // Assuming profile is a member variable
+      });
+    });
+
   }
 
   Future<void> fetchProfileData() async {
@@ -55,6 +69,7 @@ class _RecruiterHomeScreenState extends State<RecruiterHomeScreen> {
           aadharNumber = data['adhaar'] ?? "__";
           email = data['email'] ?? "__";
           city=data['city'] ?? "__";
+          profile=data['profileImage']??"";
         });
       }
     } catch (e) {
@@ -97,12 +112,23 @@ class _RecruiterHomeScreenState extends State<RecruiterHomeScreen> {
                 letterSpacing: 5.0,
                 
               ),),),
-          bottom: const TabBar(
-            tabs: [
-              Tab(child: Icon(AntDesign.user),),
-              Tab(child: Icon(AntDesign.find),),
-            ],
-          ),
+          bottom: TabBar(
+  tabs: [
+    Tab(
+      icon: Icon(AntDesign.user),
+    ),
+    Tab(
+      icon: Icon(AntDesign.find),
+    ),
+  ],
+  indicatorColor: Color(0xFF4b5ebc),  // Color for the selected tab indicator
+  unselectedLabelColor: Colors.white,  // Color for unselected tab icon
+),
+
+          shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(
+            bottom: Radius.circular(20),
+          ),),
         ),
         body: TabBarView(
           children: [
@@ -113,58 +139,86 @@ class _RecruiterHomeScreenState extends State<RecruiterHomeScreen> {
       ),
     );
   }
- Widget buildProfileTab() {
+  Widget buildProfileTab() {
     return Container(
       padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: <Widget>[
           GestureDetector(
-            onTap: () {
-              // Handle avatar change/upload here
-              // You can open a dialog, navigate to another screen, or show a bottom sheet
+            onTap: () async {
+              // Call pickImage to open the image picker
+              _profilePictureRec.pickImage(context);
             },
-            child: Stack(
-              alignment: Alignment.bottomRight,
-              children: [
-                dp,
-                Container(
-                  padding: const EdgeInsets.all(4),
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: const Color(0xFFcbc0ff),
-                  ),
-                  child: Icon(
-                    Icons.camera_alt,
-                    color: Colors.white,
-                  ),
-                ),
-              ],
+            child: StreamBuilder<String?>(
+              stream: profileImageStream, // Use the stream here
+              initialData: profile,
+              builder: (context, snapshot) {
+                print('Snapshot: $snapshot');
+                String? updatedProfile = snapshot.data;
+                print('update::::${updatedProfile}');
+                return Stack(
+                  alignment: Alignment.bottomRight,
+                  children: [
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(100),
+                      child: (profile != null && profile.isNotEmpty)
+                          ? Image.network(
+                              profile,
+                              width: 100,
+                              height: 100,
+                              fit: BoxFit.cover,
+                            )
+                          : CircleAvatar(
+                              radius: 50,
+                              backgroundColor: Colors.grey,
+                              child: const Icon(Icons.person, size: 50, color: Colors.white),
+                            ),
+                    ),
+        Positioned(
+          bottom: 0,
+          right: 0,
+          child: Container(
+            padding: const EdgeInsets.all(4),
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: const Color(0xFFcbc0ff),
+            ),
+            child: Icon(
+              Icons.camera_alt,
+              color: Colors.white,
             ),
           ),
-          const SizedBox(height: 20),
-          Text(
-            name,
-            style: const TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(Icons.location_on, color: Colors.grey),
-              const SizedBox(width: 4),
-              Text(city),
-            ],
-          ),
-          const SizedBox(height: 20),
-          buildProfileCard(),
-        ],
-      ),
+        ),
+      ],
     );
-  }
+  },
+),
+        ),
+        const SizedBox(height: 20),
+        Text(
+          name,
+          style: const TextStyle(
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.location_on, color: Colors.grey),
+            const SizedBox(width: 4),
+            Text(city),
+          ],
+        ),
+        const SizedBox(height: 20),
+        buildProfileCard(),
+      ],
+    ),
+  );
+}
+
 
   Widget buildProfileCard() {
     return Card(

@@ -10,8 +10,9 @@ class RecruiterModel{
   double? lat;
   double? long;
   List<String>? requested;
+  String? profileImage;
   
-  RecruiterModel({this.uid,this.email,this.name,this.number,this.adhaar,this.role,this.city,this.lat,this.long,this.requested});
+  RecruiterModel({this.uid,this.email,this.name,this.number,this.adhaar,this.role,this.city,this.lat,this.long,this.requested,this.profileImage});
   factory RecruiterModel.fromMap(map){
     return RecruiterModel(
       uid: map['uid'],
@@ -25,7 +26,8 @@ class RecruiterModel{
       long:map['long'],
       requested: map['requested'] != null
           ? List<String>.from(map['requested'])
-          : [], // Parse notifications list
+          : [],
+      profileImage: map['profileImage'], // Parse notifications list
     );
   }
 
@@ -41,7 +43,8 @@ Map<String, dynamic> toMap(){
     'city': city,
     'lat':lat,
     'long':long,
-    'request':requested
+    'request':requested,
+    'profileImage':profileImage
   };
 }
   bool isRecruiter() {

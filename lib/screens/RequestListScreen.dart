@@ -53,6 +53,7 @@ class UserList {
 String recCity = '';
 double reclat = 0.0;
 double reclong = 0.0;
+String recProf="";
 String worcity = '';
 double worlat = 0.0;
 double worlong = 0.0;
@@ -98,6 +99,7 @@ class _RequestListState extends State<RequestList> {
           recCity = userData['city'] ?? '';
           reclat = userData['lat'];
           reclong = userData['long'];
+          recProf=userData['profileImage'];
           print('User: $recCity, Lat: $reclat, Long: $reclong');
         } else {
           print('No data found for the specified UID');
@@ -129,7 +131,7 @@ class _RequestListState extends State<RequestList> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Workers List'),
+        title: Text('Workers List1'),
       ),
       body: StreamBuilder<List<UserList>>(
         stream: usersStream,

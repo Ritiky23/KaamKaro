@@ -20,44 +20,82 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController emailController = new TextEditingController();
   final TextEditingController passwordController = new TextEditingController();
 
-  Future<void> _login() async {
-    if (_formKey.currentState!.validate()) {
-      UserCredential userCredential = await _auth.signInWithEmailAndPassword(
+
+void showLoaderDialog(BuildContext context) {
+  AlertDialog alert = AlertDialog(
+    content: Row(
+      children: [
+        CircularProgressIndicator(),
+        Container(
+          margin: EdgeInsets.only(left: 7),
+          child: Text("Loading..."),
+        ),
+      ],
+    ),
+  );
+  showDialog(
+    barrierDismissible: false,
+    context: context,
+    builder: (BuildContext context) {
+      return alert;
+    },
+  );
+}
+
+Future<void> _login() async {
+  bool isLoading = false;
+  if (_formKey.currentState!.validate()) {
+    showLoaderDialog(context); // Show the loading dialog
+    try {
+      UserCredential userCredential =
+          await _auth.signInWithEmailAndPassword(
         email: emailController.text,
         password: passwordController.text,
       );
       String userrole = '';
       String uid = userCredential.user!.uid;
-
-      DocumentSnapshot recruiterdoc =
-          await FirebaseFirestore.instance.collection('recruiters').doc(uid).get();
+      DocumentSnapshot recruiterdoc = await FirebaseFirestore.instance
+          .collection('recruiters')
+          .doc(uid)
+          .get();
       if (recruiterdoc.exists) {
         userrole = 'recruiter';
-        print('recrri');
+        print('recruiter');
       } else {
-        DocumentSnapshot workerdoc =
-            await FirebaseFirestore.instance.collection('workers').doc(uid).get();
+        DocumentSnapshot workerdoc = await FirebaseFirestore.instance
+            .collection('workers')
+            .doc(uid)
+            .get();
         if (workerdoc.exists) {
           userrole = 'worker';
-          print(userrole);
+          print('worker');
         }
       }
       if (userrole == 'worker') {
+        Navigator.of(context, rootNavigator: true).pop();
         Navigator.push(
           context,
           MaterialPageRoute(builder: (context) => WorkerHomeScreen()),
         );
       } else if (userrole == 'recruiter') {
+        Navigator.of(context, rootNavigator: true).pop();
         Navigator.push(
           context,
           MaterialPageRoute(builder: (context) => RecruiterHomeScreen()),
         );
       }
       print('Login successful: ${userCredential.user!.email}');
-    } else {
-      print("Login Failed");
+    } catch (error) {
+      print("Login Failed: $error");
+    } finally {
+      print("yeasss");
+       // Close the loading dialog
     }
+  } else {
+    print("Login Failed");
   }
+}
+
 
   @override
   Widget build(BuildContext context) {
@@ -145,6 +183,8 @@ class _LoginScreenState extends State<LoginScreen> {
     final loginButton = ElevatedButton(
       onPressed: () async {
         await _login();
+ // This will close the dialog
+
       },
       style: ElevatedButton.styleFrom(primary: Color(0xFF4b5ebc)),
       child: Text(

@@ -5,12 +5,14 @@ class WorkerRecProfileWithoutAadhaar extends StatelessWidget {
   final String city;
   final String phoneNumber;
   final String email;
+  final String profileImg;
 
   WorkerRecProfileWithoutAadhaar({
     required this.name,
     required this.city,
     required this.phoneNumber,
     required this.email,
+    required this.profileImg,
   });
 
   @override
@@ -30,7 +32,7 @@ class WorkerRecProfileWithoutAadhaar extends StatelessWidget {
             CircleAvatar(
               radius: 50,
               // replace 'dp' with your actual profile picture widget or image
-              backgroundImage: AssetImage('images/dp_mine.jpg'),
+              backgroundImage: NetworkImage(profileImg),
             ),
             const SizedBox(height: 20),
             Text(

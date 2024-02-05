@@ -74,6 +74,26 @@ class _SignUpPageState extends State<SignUpPage> {
   );
    }
 
+void showLoaderDialog(BuildContext context) {
+  AlertDialog alert = AlertDialog(
+    content: Row(
+      children: [
+        CircularProgressIndicator(),
+        Container(
+          margin: EdgeInsets.only(left: 7),
+          child: Text("SignIn..."),
+        ),
+      ],
+    ),
+  );
+  showDialog(
+    barrierDismissible: false,
+    context: context,
+    builder: (BuildContext context) {
+      return alert;
+    },
+  );
+}
   @override
   Widget build(BuildContext context) {
       final NameField=TextFormField(
@@ -228,7 +248,9 @@ class _SignUpPageState extends State<SignUpPage> {
           onPressed: (){
             String e=emailController.text;
             String p=passwordController.text;
+            showLoaderDialog(context);
             signUp(e, p);
+            
           },      style: ElevatedButton.styleFrom(primary: Color(0xFF4b5ebc)),
       child: Text(
         "Sign Up",
@@ -404,8 +426,10 @@ void signUp(String email, String password) async {
       UserCredential userCredential = await _auth.createUserWithEmailAndPassword(email: email, password: password);
       postDetailsToFirestore(userCredential.user!);
       if(role=='worker'){
+        Navigator.of(context, rootNavigator: true).pop();
         Navigator.push(context, MaterialPageRoute(builder: (context)=>WorkerHomeScreen(),),);
       }else if(role=='recruiter'){
+        Navigator.of(context, rootNavigator: true).pop();
         Navigator.push(context, MaterialPageRoute(builder: (context)=>RecruiterHomeScreen(),),);
       }
     } catch (e) {
