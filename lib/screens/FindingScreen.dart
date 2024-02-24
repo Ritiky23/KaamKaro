@@ -177,12 +177,23 @@ return Card(
   child: ListTile(
     contentPadding: EdgeInsets.all(16),
 leading: CircleAvatar(
-  radius: 30,
-  backgroundImage: NetworkImage(user.wprof ?? "images/work1.jpg") as ImageProvider<Object>?,
-),
-
-
-
+      radius: 30,
+      child: user.wprof != null && user.wprof.isNotEmpty
+          ? ClipRRect(
+              borderRadius: BorderRadius.circular(30),
+              child: Image.network(
+                user.wprof,
+                width: 60,
+                height: 60,
+                fit: BoxFit.cover,
+              ),
+            )
+          : Icon(
+              AntDesign.user,
+              size: 30,
+              color: Colors.white,
+            ),
+    ),
     title: Text(
       user.name,
       style: TextStyle(

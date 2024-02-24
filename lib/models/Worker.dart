@@ -10,8 +10,9 @@ class WorkerModel {
   double? lat = 0;
   double? long = 0;
   bool? available = false;
+  int? TotalWork=0;
   List<String>? requests;
-  double? rating = 0;
+  List<double>? ratings; // Updated to store a list of ratings
   String? profileImage; // New field for profile image URL
 
   WorkerModel({
@@ -26,13 +27,13 @@ class WorkerModel {
     this.lat,
     this.long,
     this.available,
+    this.TotalWork,
     this.requests,
-    this.rating,
-    this.profileImage, // Initialize the new field
+    this.ratings, // Updated to accept a list of ratings
+    this.profileImage,
   });
 
-  // Receiving data from server
-  factory WorkerModel.fromMap(map) {
+  factory WorkerModel.fromMap(Map<String, dynamic> map) {
     return WorkerModel(
       uid: map['uid'],
       email: map['email'],
@@ -45,13 +46,13 @@ class WorkerModel {
       lat: map['lat'],
       long: map['long'],
       available: map['available'],
+      TotalWork: map['TotalWork'],
       requests: map['requests'] != null ? List<String>.from(map['requests']) : [],
-      rating: map['rating'],
-      profileImage: map['profileImage'], // Populate the new field
+      ratings: map['ratings'] != null ? List<double>.from(map['ratings']) : [], // Updated to parse a list of ratings
+      profileImage: map['profileImage'],
     );
   }
 
-  // Sending data to our server
   Map<String, dynamic> toMap() {
     return {
       'uid': uid,
@@ -65,13 +66,22 @@ class WorkerModel {
       'lat': lat,
       'long': long,
       'available': available,
+      'TotalWork':TotalWork,
       'requests': requests,
-      'rating': rating,
-      'profileImage': profileImage, // Include the new field
+      'ratings': ratings, // Updated to include ratings in the map
+      'profileImage': profileImage,
     };
   }
 
   bool isWorker() {
     return role?.toLowerCase() == 'worker';
+  }
+
+  double calculateAverageRating() {
+    if (ratings == null || ratings!.isEmpty) {
+      return 0.0; // If no ratings, return 0
+    }
+    double totalRating = ratings!.reduce((a, b) => a + b); // Sum of all ratings
+    return totalRating / ratings!.length; // Average rating
   }
 }

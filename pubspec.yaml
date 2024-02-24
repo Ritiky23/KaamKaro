@@ -52,10 +52,12 @@ dependencies:
   flutter_svg: ^2.0.9
   url_launcher: ^6.0.6
   google_places_autocomplete_text_field: ^0.1.2
-  flutter_rating_stars: ^1.0.3+4
+  flutter_rating_bar: ^4.0.1
   image_picker: ^1.0.7
   location: ^5.0.0
   flutter_google_maps_webservices: ^1.1.1
+  simple_circular_progress_bar: ^1.0.2
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

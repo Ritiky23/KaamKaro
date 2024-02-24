@@ -3,6 +3,9 @@ import 'dart:io';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:kaamkaro/screens/RecruiterHomeScreen.dart';
+import 'package:kaamkaro/screens/SplashScreen.dart';
+import 'package:kaamkaro/screens/WorkerHomeScreen.dart';
 import 'package:kaamkaro/screens/login.dart';
 import 'package:kaamkaro/screens/signup.dart';
 
@@ -22,7 +25,6 @@ void main() async{
 }
 
 class MyApp extends StatelessWidget {
-
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -31,9 +33,15 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         textTheme: GoogleFonts.abelTextTheme(
           Theme.of(context).textTheme,
-      
-      ),),
-      home: LoginScreen(),
+        ),
+      ),
+      home: SplashScreen(), // Entry point is the SplashScreen
+      routes: {
+        '/login': (context) => LoginScreen(),
+        '/signup': (context) => SignUpPage(),
+        '/recruiter_home': (context) => RecruiterHomeScreen(),
+        '/worker_home': (context) => WorkerHomeScreen(),
+      },
     );
   }
 }

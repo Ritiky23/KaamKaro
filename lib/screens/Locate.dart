@@ -88,7 +88,7 @@ class _MapPageState extends State<MapPage> {
                           ),
                           onPressed: () async {
                             await launchUrl(Uri.parse(
-                                'google.navigation:q=${widget.lat}, ${widget.lng}&key=YOUR_API_KEY'));
+                                'google.navigation:q=${widget.lat}, ${widget.lng}&key=AIzaSyBAjt_0ovJZvOkS7ScTRoC-lydDmQwUAgI'));
                           },
                         ),
                       ),
@@ -161,7 +161,7 @@ class _MapPageState extends State<MapPage> {
     List<LatLng> polylineCoordinates = [];
     List<dynamic> points = [];
     PolylineResult result = await polylinePoints.getRouteBetweenCoordinates(
-        'YOUR_API_KEY',
+        'AIzaSyBAjt_0ovJZvOkS7ScTRoC-lydDmQwUAgI',
         PointLatLng(curLocation.latitude, curLocation.longitude),
         PointLatLng(dst.latitude, dst.longitude),
         travelMode: TravelMode.driving);

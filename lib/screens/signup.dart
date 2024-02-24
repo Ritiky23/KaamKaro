@@ -78,10 +78,12 @@ void showLoaderDialog(BuildContext context) {
   AlertDialog alert = AlertDialog(
     content: Row(
       children: [
-        CircularProgressIndicator(),
+       CircularProgressIndicator(
+        color: Color(0xFFcbc0ff) ,
+       ),
         Container(
           margin: EdgeInsets.only(left: 7),
-          child: Text("SignIn..."),
+          child: Text("Signing",style: TextStyle(fontWeight: FontWeight.bold),),
         ),
       ],
     ),

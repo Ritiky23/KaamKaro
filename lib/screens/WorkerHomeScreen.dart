@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ffi';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -13,6 +14,7 @@ import 'package:kaamkaro/screens/Locate.dart';
 import 'package:kaamkaro/screens/MapScreen.dart';
 import 'package:kaamkaro/screens/ReqPhoneMapScreen.dart';
 import 'package:kaamkaro/screens/WorkerRecProfile.dart';
+import 'package:kaamkaro/screens/login.dart';
 import 'package:kaamkaro/utils/ProfileImageWorker.dart';
 
 class WorkerHomeScreen extends StatefulWidget {
@@ -36,7 +38,9 @@ CircleAvatar dp = CircleAvatar(
   String aadharNumber = "__";
   String email = "__";
   String profile="";
-  String recProfile="__";
+  double worlat=0;
+  double worlong=0;
+  String recProfile="";
   bool isAvailable = false;
   String city = "__";
   double rating = 4.5; // Replace with the actual rating
@@ -105,6 +109,9 @@ Future<void> fetchIsAvailable() async {
           email = data['email'] ?? "__";
           city = data['city'] ?? "__";
           profile = data['profileImage'] ?? "";
+          worlat=data['lat']?? 0.0;
+          worlong=data['long']?? 0.0;
+          print("Length:${name}");
           // Add the following line to notify the UI about changes in the profile image URL
           _profileImageStreamController.add(profile);
         });
@@ -114,13 +121,18 @@ Future<void> fetchIsAvailable() async {
     }
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return DefaultTabController(
+@override
+Widget build(BuildContext context) {
+  return WillPopScope(
+    onWillPop: () async {
+      // Disable going back to the login screen by pressing the back button
+      return false;
+    },
+    child: DefaultTabController(
       length: 2,
       child: Scaffold(
         appBar: AppBar(
-            actions: [
+          actions: [
             PopupMenuButton<String>(
               onSelected: (value) {
                 if (value == 'logout') {
@@ -139,34 +151,34 @@ Future<void> fetchIsAvailable() async {
             ),
           ],
           backgroundColor: const Color(0xFFcac1ff),
-          title:         Text(
+          title: Text(
             'KaamKaro',
             style: GoogleFonts.bebasNeue(
               textStyle: TextStyle(
-                fontSize: 30.0, // Adjust the size as needed
+                fontSize: 30.0,
                 color: Colors.white,
                 letterSpacing: 5.0,
-                
-              ),),),
+              ),
+            ),
+          ),
           bottom: TabBar(
-  tabs: [
-    Tab(
-      icon: Icon(AntDesign.user),
-    ),
-    Tab(
-      icon: Icon(AntDesign.tool),
-    ),
-  ],
-  indicatorColor: Color(0xFF4b5ebc),  // Color for the selected tab indicator
-  unselectedLabelColor: Colors.white,  // Color for unselected tab icon
-),
-
+            tabs: [
+              Tab(
+                icon: Icon(AntDesign.user),
+              ),
+              Tab(
+                icon: Icon(AntDesign.tool),
+              ),
+            ],
+            indicatorColor: Color(0xFF4b5ebc),
+            unselectedLabelColor: Colors.white,
+          ),
           shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(
-            bottom: Radius.circular(20),
-          ),),
+            borderRadius: BorderRadius.vertical(
+              bottom: Radius.circular(20),
+            ),
+          ),
         ),
-        
         body: TabBarView(
           children: [
             buildProfileTab(),
@@ -174,8 +186,10 @@ Future<void> fetchIsAvailable() async {
           ],
         ),
       ),
-    );
-  }
+    ),
+  );
+}
+
 
   Future<void> toggleAvailability() async {
     User? user = _auth.currentUser;
@@ -206,8 +220,8 @@ Widget buildWorkTab() {
         print('Data refreshed');
       });
     },
-    child: FutureBuilder<DocumentSnapshot<Map<String, dynamic>>>(
-      future: FirebaseFirestore.instance.collection('workers').doc(_auth.currentUser?.uid).get(),
+    child: StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+      stream: FirebaseFirestore.instance.collection('workers').doc(_auth.currentUser?.uid).snapshots(),
       builder: (context, snapshot) {
         if (!snapshot.hasData) {
           return Scaffold(
@@ -249,7 +263,6 @@ Widget buildWorkTab() {
             .where((entry) => entry.value == false)
             .map((entry) => entry.key)
             .toList();
-
         return ListView.builder(
           itemCount: keysWithFalseValue.length,
           itemBuilder: (context, index) {
@@ -274,93 +287,106 @@ Widget buildWorkTab() {
                   return Text('No data available for the recruiter');
                 }
 
-                return ListTile(
-                  key: GlobalKey(),
-                  leading: CircleAvatar(
-                    radius: 30,
-                    child: recData['profileImage'] != null && recData['profileImage'].isNotEmpty
-                        ? ClipRRect(
-                            borderRadius: BorderRadius.circular(30),
-                            child: Image.network(
-                              recData['profileImage'],
-                              width: 60,
-                              height: 60,
-                              fit: BoxFit.cover,
-                            ),
-                          )
-                        : Icon(
-                            AntDesign.user,
-                            size: 30,
-                            color: Colors.white,
-                          ),
+               return Card(
+  elevation: 4,
+  shape: RoundedRectangleBorder(
+    borderRadius: BorderRadius.circular(12),
+  ),
+  margin: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+  child: ListTile(
+    key: GlobalKey(),
+    contentPadding: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+    leading: CircleAvatar(
+      radius: 30,
+      child: recData['profileImage'] != null && recData['profileImage'].isNotEmpty
+          ? ClipRRect(
+              borderRadius: BorderRadius.circular(30),
+              child: Image.network(
+                recData['profileImage'],
+                width: 60,
+                height: 60,
+                fit: BoxFit.cover,
+              ),
+            )
+          : Icon(
+              AntDesign.user,
+              size: 30,
+              color: Colors.white,
+            ),
+    ),
+    title: Text(
+      recData['name'],
+      style: TextStyle(
+        fontSize: 20,
+        fontWeight: FontWeight.bold,
+      ),
+    ),
+    subtitle: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SizedBox(height: 4),
+        Row(
+          children: [
+            Icon(Icons.location_on, size: 16, color: Colors.grey),
+            SizedBox(width: 4),
+            Text(
+              recData['city'],
+              style: TextStyle(fontSize: 14, color: Colors.grey),
+            ),
+          ],
+        ),
+        SizedBox(height: 4),
+        Text(
+          '${GeoUtils.calculateHaversine(worlat, worlong, recData['lat'], recData['long']).toStringAsFixed(2)}km away',
+          style: TextStyle(fontSize: 14, color: Colors.grey),
+        ),
+      ],
+    ),
+    trailing: Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Visibility(
+          visible: !tickbtn,
+          child: IconButton(
+            icon: Icon(Icons.close, color: Colors.red),
+            onPressed: () {
+              removeRequest(recuid, key);
+              // Handle "Close" button click
+            },
+          ),
+        ),
+        SizedBox(width: 8),
+        Visibility(
+          visible: !tickbtn,
+          child: IconButton(
+            icon: Icon(Icons.check, color: Colors.green),
+            onPressed: () {
+              setState(() {
+                tickbtn = false;
+              });
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => PhoneMapScreen(
+                    phoneNumber: recData['number'],
+                    recName: recData['name'],
+                    recProfile: recData['profileImage'],
+                    reclat: recData['lat'],
+                    reclong: recData['long'],
+                    worlat: worlat,
+                    worlong: worlong,
                   ),
-                  title: Text(
-                    recData['name'],
-                    style: const TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  subtitle: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        recData['city'],
-                        style: const TextStyle(
-                          fontSize: 15,
-                        ),
-                      ),
-                      Text(
-                        '${GeoUtils.calculateHaversine(worlat, worlong, recData['lat'], recData['long']).toStringAsFixed(2)}km',
-                        style: const TextStyle(
-                          fontSize: 15,
-                        ),
-                      ),
-                    ],
-                  ),
-                  trailing: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Visibility(
-                        visible: !tickbtn,
-                        child: IconButton(
-                          icon: Icon(Icons.close, color: Colors.red),
-                          onPressed: () {
-                            removeRequest(recuid, key);
-                            // Handle "Close" button click
-                          },
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Visibility(
-                        visible: !tickbtn,
-                        child: IconButton(
-                          icon: Icon(Icons.check, color: Colors.green),
-                          onPressed: () {
-                            setState(() {
-                              tickbtn = true;
-                            });
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => PhoneMapScreen(
-                                  phoneNumber: recData['number'],
-                                  recName: recData['name'],
-                                  recProfile: recData['profileImage'],
-                                  reclat: recData['lat'],
-                                  reclong: recData['long'],
-                                  worlat: worlat,
-                                  worlong: worlong,
-                                ),
-                              ),
-                            );
-                            updateRequestStatus(recuid, true);
-                          },
-                        ),
-                      ),
-                    ],
-                  ),
-                );
+                ),
+              );
+              updateRequestStatus(recuid, true);
+            },
+          ),
+        ),
+      ],
+    ),
+  ),
+);
+
               },
             );
           },
@@ -379,11 +405,14 @@ Widget buildWorkTab() {
       });
     });
   }
-
- Future<void> _signOut() async {
-    await FirebaseAuth.instance.signOut();
-    Navigator.of(context).pop(); // Close the screen
-  }
+Future<void> _signOut() async {
+  await FirebaseAuth.instance.signOut();
+  Navigator.pushAndRemoveUntil(
+    context,
+    MaterialPageRoute(builder: (context) => LoginScreen()),
+    (Route<dynamic> route) => false, // Clear the navigation stack
+  );
+}
 
 
   Widget buildProfileTab() {
@@ -418,8 +447,8 @@ Widget buildWorkTab() {
                             )
                           : CircleAvatar(
                               radius: 50,
-                              backgroundColor: Colors.grey,
-                              child: const Icon(Icons.person, size: 50, color: Colors.white),
+                              backgroundColor: Color.fromARGB(255, 221, 214, 255),
+                              child: const Icon(AntDesign.user, size: 50, color: Colors.white),
                             ),
                     ),
         Positioned(
@@ -479,7 +508,7 @@ Widget buildWorkTab() {
                       Icon(Icons.star),
                       SizedBox(width: 10,),
                       Text(
-                        rating.toString(),
+                        "0.0",
                         style: const TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
@@ -499,7 +528,7 @@ Widget buildWorkTab() {
                     ),
                   ),
                   Text(
-                    totalWorkCount.toString(),
+                    "0",
                     style: const TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
@@ -524,7 +553,6 @@ Widget buildWorkTab() {
       ),
     );
   }
-
   Future<void> updateRequestStatus(String recuid, bool status) async {
     try {
       await FirebaseFirestore.instance

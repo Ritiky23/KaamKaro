@@ -6,6 +6,7 @@ import 'package:kaamkaro/screens/RecruiterHomeScreen.dart';
 import 'package:kaamkaro/screens/WorkerHomeScreen.dart';
 import 'package:kaamkaro/screens/signup.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:simple_circular_progress_bar/simple_circular_progress_bar.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -25,10 +26,12 @@ void showLoaderDialog(BuildContext context) {
   AlertDialog alert = AlertDialog(
     content: Row(
       children: [
-        CircularProgressIndicator(),
+       CircularProgressIndicator(
+        color: Color(0xFFcbc0ff) ,
+       ),
         Container(
           margin: EdgeInsets.only(left: 7),
-          child: Text("Loading..."),
+          child: Text("Loging",style: TextStyle(fontWeight: FontWeight.bold),),
         ),
       ],
     ),

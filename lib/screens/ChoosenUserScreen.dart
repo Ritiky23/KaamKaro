@@ -1,8 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:flutter_vector_icons/flutter_vector_icons.dart';
-import 'package:flutter_rating_stars/flutter_rating_stars.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class UserProfileScreen extends StatefulWidget {
@@ -26,13 +26,14 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
   String city = "";
   String phoneNumber = "";
   String email = "";
-  double rating = 4.5;
-  int totalWork = 50;
+  double rating = 0.0;
+  
   String profession = "";
   bool sent = false;
   bool accepted = false;
   String profileImg='';
-  int _stars = 0;
+  double _stars = 0.0;
+  int TotalWork=0;
 
   @override
   void initState() {
@@ -69,7 +70,6 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
       print('Error sending request: $e');
     }
   }
-
   Future<bool> isCurrentUserInWorkerRequests(String workerUid) async {
     try {
       FirebaseAuth auth = FirebaseAuth.instance;
@@ -139,8 +139,8 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
           phoneNumber = data['number'] ?? "__";
           email = data['email'] ?? "__";
           city = data['city'] ?? "__";
-          rating = data['rating'] ?? 0.0;
-          totalWork = data['totalWork'] ?? 0;
+          rating = data['averageRating'] ?? 0.0;
+          TotalWork = data['TotalWork'] ?? 0;
           profession = data['profession'] ?? "__";
           profileImg=data['profileImage']??"";
         });
@@ -194,11 +194,21 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
             child: Stack(
               alignment: Alignment.bottomRight,
               children: [
-                CircleAvatar(
-                  radius: 50,
-                  backgroundImage: NetworkImage(profileImg),
-                )
-                ,
+                ClipRRect(
+                      borderRadius: BorderRadius.circular(100),
+                      child: (profileImg!= null && profileImg.isNotEmpty)
+                          ? Image.network(
+                              profileImg,
+                              width: 100,
+                              height: 100,
+                              fit: BoxFit.cover,
+                            )
+                          : CircleAvatar(
+                              radius: 50,
+                              backgroundColor: Color(0xFFcbc0ff),
+                              child: const Icon(AntDesign.user, size: 50, color: Colors.white),
+                            ),
+                    ),
               ],
             ),
           ),
@@ -237,7 +247,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                       Icon(Icons.star),
                       SizedBox(width: 10,),
                       Text(
-                        '4.5',
+                        rating.toStringAsFixed(1),
                         style: const TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
@@ -257,7 +267,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                     ),
                   ),
                   Text(
-                    '50',
+                    TotalWork.toString(),
                     style: const TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
@@ -314,7 +324,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                         accepted ? Colors.green : Color(0xFF4b5ebc),
                   ),
                   onPressed: () async {
-                    if (sent || accepted) {
+                    if ( sent || accepted ) {
                       setState(() {
                         sent = false;
                       });
@@ -350,54 +360,130 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
       ),
     );
   }
-
-  Widget _buildStar(int starCount) {
-    return GestureDetector(
-      onTap: () {
-        setState(() {
-          _stars = starCount;
-        });
-      },
-      child: AnimatedContainer(
-        duration: Duration(milliseconds: 300),
-        child: Icon(
-          Icons.star,
-          color: _stars >= starCount ? Colors.orange : Colors.grey,
-        ),
-      ),
-    );
-  }
-
-  Future<void> _showReviewDialog() async {
-    await showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Center(child: Text('Rate the Work')),
-          content: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: <Widget>[
-              _buildStar(1),
-              _buildStar(2),
-              _buildStar(3),
-              _buildStar(4),
-              _buildStar(5),
-            ],
-          ),
-          actions: <Widget>[
-            ElevatedButton(
-              child: Text('CANCEL'),
-              onPressed: Navigator.of(context).pop,
-            ),
-            ElevatedButton(
-              child: Text('OK'),
-              onPressed: () {
-                Navigator.of(context).pop(_stars);
-              },
-            ),
+Future<void> _showReviewDialog() async {
+  await showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        title: Center(child: Text('Rate the Work')),
+        content: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: <Widget>[
+            RatingBar.builder(initialRating: 3,
+   minRating: 1,
+   direction: Axis.horizontal,
+   allowHalfRating: true,
+   itemCount: 5,
+   itemPadding: EdgeInsets.symmetric(horizontal: 4.0),
+   itemBuilder: (context, _) => Icon(
+     Icons.star,
+     color: Colors.amber,
+   ),
+   onRatingUpdate: (rating) {
+     _stars=rating;
+     print(rating);
+   },
+),
           ],
-        );
-      },
-    );
+        ),
+        actions: <Widget>[
+          ElevatedButton(
+            child: Text('CANCEL'),
+            onPressed: Navigator.of(context).pop,
+          ),
+          ElevatedButton(
+            child: Text('OK'),
+            onPressed: () {
+              // Call submitRating function with selected rating value
+              submitRating(widget.wuid, _stars.toDouble());
+              Navigator.of(context).pop(); // Close the dialog
+            },
+          ),
+        ],
+      );
+    },
+  );
+}
+// Function to submit a rating for a worker
+Future<void> submitRating(String workerId, double ratingValue) async {
+  try {
+    DocumentSnapshot<Map<String, dynamic>> snapshot =
+    await FirebaseFirestore.instance.collection('workers').doc(workerId).get();
+
+    List<dynamic> ratings = snapshot.data()?['ratings'] ?? [];
+
+    print('Ratings before adding: $ratings');
+
+    // Add the new rating to the existing array
+    ratings.add(ratingValue);
+
+    print('Ratings after adding: $ratings');
+
+    // Update WorkerModel object in Firestore with the updated ratings array
+    await FirebaseFirestore.instance.collection('workers').doc(workerId).update({
+      'ratings': ratings,
+    });
+    // Calculate the average rating for the worker
+    double averageRating = await calculateAverageRating(workerId);
+
+    // Update the Firestore document with the updated average rating
+    await FirebaseFirestore.instance.collection('workers').doc(workerId).update({
+      'averageRating': averageRating,
+    });
+    await FirebaseFirestore.instance.collection("workers").doc(workerId).update({
+      'TotalWork': TotalWork
+    });
+    Navigator.of(context).pop();
+  } catch (error) {
+    print('Error submitting rating: $error');
   }
+}
+
+void showLoaderDialog(BuildContext context) {
+  AlertDialog alert = AlertDialog(
+    content: Row(
+      children: [
+       CircularProgressIndicator(
+        color: Color(0xFFcbc0ff) ,
+       ),
+        Container(
+          margin: EdgeInsets.only(left: 7),
+          child: Text("Signing",style: TextStyle(fontWeight: FontWeight.bold),),
+        ),
+      ],
+    ),
+  );
+  showDialog(
+    barrierDismissible: false,
+    context: context,
+    builder: (BuildContext context) {
+      return alert;
+    },
+  );
+}
+
+// Function to calculate the average rating for a worker
+Future<double> calculateAverageRating(String workerId) async {
+  try {
+    // Retrieve the WorkerModel object from Firestore
+    DocumentSnapshot<Map<String, dynamic>> snapshot =
+        await FirebaseFirestore.instance.collection('workers').doc(workerId).get();
+
+    // Retrieve the ratings list from the WorkerModel object
+    List<dynamic>? ratings = snapshot.data()?['ratings'];
+
+    // If ratings list is empty or null, return 0
+    if (ratings == null || ratings.isEmpty) {
+      return 0.0;
+    }
+
+    // Calculate the average rating
+    double totalRating = ratings.map((rating) => rating.toDouble()).reduce((a, b) => a + b);
+    TotalWork=ratings.length;
+    return totalRating / ratings.length;
+  } catch (error) {
+    print('Error calculating average rating: $error');
+    return 0.0;
+  }
+}
 }

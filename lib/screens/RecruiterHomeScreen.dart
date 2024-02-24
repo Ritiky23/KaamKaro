@@ -10,6 +10,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:kaamkaro/screens/FindingScreen.dart';
 import 'package:kaamkaro/utils/ProfileImageRec.dart';
+import 'package:simple_circular_progress_bar/simple_circular_progress_bar.dart';
 
 
 class RecruiterHomeScreen extends StatefulWidget {
@@ -77,9 +78,14 @@ class _RecruiterHomeScreenState extends State<RecruiterHomeScreen> {
     }
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return DefaultTabController(
+@override
+Widget build(BuildContext context) {
+  return WillPopScope(
+    onWillPop: () async {
+      // Disable going back to the login screen by pressing the back button
+      return false;
+    },
+    child: DefaultTabController(
       length: 2,
       child: Scaffold(
         appBar: AppBar(
@@ -101,34 +107,34 @@ class _RecruiterHomeScreenState extends State<RecruiterHomeScreen> {
               ],
             ),
           ],
-         
           backgroundColor: Color(0xFFcbc0ff),
-                    title: Text(
+          title: Text(
             'KaamKaro',
             style: GoogleFonts.bebasNeue(
               textStyle: TextStyle(
-                fontSize: 30.0, // Adjust the size as needed
+                fontSize: 30.0,
                 color: Colors.white,
                 letterSpacing: 5.0,
-                
-              ),),),
+              ),
+            ),
+          ),
           bottom: TabBar(
-  tabs: [
-    Tab(
-      icon: Icon(AntDesign.user),
-    ),
-    Tab(
-      icon: Icon(AntDesign.find),
-    ),
-  ],
-  indicatorColor: Color(0xFF4b5ebc),  // Color for the selected tab indicator
-  unselectedLabelColor: Colors.white,  // Color for unselected tab icon
-),
-
+            tabs: [
+              Tab(
+                icon: Icon(AntDesign.user),
+              ),
+              Tab(
+                icon: Icon(AntDesign.find),
+              ),
+            ],
+            indicatorColor: Color(0xFF4b5ebc),
+            unselectedLabelColor: Colors.white,
+          ),
           shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(
-            bottom: Radius.circular(20),
-          ),),
+            borderRadius: BorderRadius.vertical(
+              bottom: Radius.circular(20),
+            ),
+          ),
         ),
         body: TabBarView(
           children: [
@@ -137,8 +143,10 @@ class _RecruiterHomeScreenState extends State<RecruiterHomeScreen> {
           ],
         ),
       ),
-    );
-  }
+    ),
+  );
+}
+
   Widget buildProfileTab() {
     return Container(
       padding: const EdgeInsets.all(16),
@@ -171,8 +179,8 @@ class _RecruiterHomeScreenState extends State<RecruiterHomeScreen> {
                             )
                           : CircleAvatar(
                               radius: 50,
-                              backgroundColor: Colors.grey,
-                              child: const Icon(Icons.person, size: 50, color: Colors.white),
+                              backgroundColor: Color.fromARGB(255, 221, 214, 255),
+                              child: const Icon(AntDesign.user, size: 50, color: Colors.white),
                             ),
                     ),
         Positioned(
@@ -325,6 +333,42 @@ class _RecruiterHomeScreenState extends State<RecruiterHomeScreen> {
       ),
     );
   }
+
+void showLoaderDialog(BuildContext context) {
+  AlertDialog alert = AlertDialog(
+    contentPadding: EdgeInsets.zero, // Remove default padding
+    content: Container(
+      width: 200, // Set custom width for the container
+      padding: EdgeInsets.all(16), // Add padding to the container
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(8), // Add border radius
+        color: Colors.white, // Optional: Set background color
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          CircularProgressIndicator(
+            color: Color(0xFFcbc0ff),
+          ),
+          SizedBox(width: 16),
+          Text(
+            "LOADING",
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
+        ],
+      ),
+    ),
+  );
+  showDialog(
+    barrierDismissible: false,
+    context: context,
+    builder: (BuildContext context) {
+      return alert;
+    },
+  );
+}
+
+
     void showLocationDialog(String title) {
     showDialog(
       context: context,
@@ -336,7 +380,8 @@ class _RecruiterHomeScreenState extends State<RecruiterHomeScreen> {
               children: <Widget>[
                 ElevatedButton(
                   onPressed: () async {
-                    Navigator.of(context).pop(); // Close the dialog
+                    Navigator.of(context).pop();
+                    showLoaderDialog(context);  // Close the dialog
                     // Get current location
                     Position position = await Geolocator.getCurrentPosition(
                       desiredAccuracy: LocationAccuracy.high,
@@ -351,6 +396,7 @@ class _RecruiterHomeScreenState extends State<RecruiterHomeScreen> {
                     // Use the obtained location details as needed
                     print('Current Location: $position, City: $city');
                     updateRecruiterLocation(ruid, city, position.latitude, position.longitude,title);
+                    
                   },
                   child: Text('Current Location'),
                 ),
@@ -373,37 +419,48 @@ class _RecruiterHomeScreenState extends State<RecruiterHomeScreen> {
     await FirebaseAuth.instance.signOut();
     Navigator.of(context).pop(); // Close the screen
   }
+
   void showManualLocationDialog() {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        String manualLocation = '';
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      String manualLocation = '';
+      return AlertDialog(
+        title: Text('Enter Location Manually'),
+        content: StatefulBuilder(
+          builder: (BuildContext context, StateSetter setState) {
+            return Column(
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                SizedBox(height: 16),
+                TextField(
+                  onChanged: (value) {
+                    manualLocation = value;
+                  },
+                  decoration: InputDecoration(
+                    hintText: 'Enter location',
+                  ),
+                ),
+              ],
+            );
+          },
+        ),
+        actions: <Widget>[
+          ElevatedButton(
+            onPressed: () {
+              Navigator.of(context).pop(); // Close the dialog
 
-        return AlertDialog(
-          title: Text('Enter Location Manually'),
-          content: TextField(
-            onChanged: (value) {
-              manualLocation = value;
+              // Use manualLocation as needed (e.g., perform geocoding)
+              print('Entered Location: $manualLocation');
             },
-            decoration: InputDecoration(
-              hintText: 'Enter location',
-            ),
+            child: Text('Submit'),
           ),
-          actions: <Widget>[
-            ElevatedButton(
-              onPressed: () {
-                Navigator.of(context).pop(); // Close the dialog
+        ],
+      );
+    },
+  );
+}
 
-                // Use manualLocation as needed (e.g., perform geocoding)
-                print('Entered Location: $manualLocation');
-              },
-              child: Text('Submit'),
-            ),
-          ],
-        );
-      },
-    );
-  }
   void updateRecruiterLocation(String recruiterUid, String cityName, double latitude, double longitude,String title) async {
   try {
     await FirebaseFirestore.instance
@@ -414,6 +471,7 @@ class _RecruiterHomeScreenState extends State<RecruiterHomeScreen> {
           'lat': latitude,
           'long': longitude,
         });
+        Navigator.pop(context);
         Navigator.push(
         context,
         MaterialPageRoute(builder: (context) => WorkersList(customParameter: title)));
